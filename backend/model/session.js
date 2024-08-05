@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const sessionSchema = new mongoose.Schema({
     sessionId: {
@@ -8,14 +8,17 @@ const sessionSchema = new mongoose.Schema({
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: 'User',
         required: true
     },
     expiresAt: {
         type: Date,
-        default: () => new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day from now
-        index: { expires: '1d' } // Automatically delete session after 1 day
+        default: () => new Date(Date.now() + 1 * 60 * 1000), // 1 minute from now
+        index: true
     }
 });
 
-export const Session = mongoose.model("Session", sessionSchema);
+// Ensure the TTL index is created on the `expiresAt` field
+sessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 60 });
+
+export const Session = mongoose.model('Session', sessionSchema);

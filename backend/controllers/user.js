@@ -66,17 +66,24 @@ export const login = async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Create a session
+        // Check if a session already exists for the user
+        const existingSession = await Session.findOne({ userId: user._id });
+        if (existingSession) {
+            // If a session exists, respond with the existing sessionId
+            return res.status(200).json({ sessionId: existingSession.sessionId, userId: user._id });
+        }
+
+        // Create a new session if no existing session is found
         const sessionId = uuidv4();
         const session = new Session({ sessionId, userId: user._id });
         await session.save();
 
-        // Respond with sessionId and userId
+        // Respond with the new sessionId and userId
         return res.status(200).json({ sessionId, userId: user._id });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
-}
+};
 
 export const getUser = async (req, res, next) => {
     try {
